@@ -1,0 +1,17 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+<html>
+	<head>
+		{% block head %}
+		<title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/plyr.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/docs.css') }}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/listr.pack.css')}}">
+        <link rel="stylesheet" href="{{url_for('static', filename='css/jquery.filer.css')}}">
+		{% endblock %}
+	</head>
+	<body >
+		{% block body %}
+
+		{% endblock %}
+	</body>
+</html>

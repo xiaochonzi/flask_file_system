@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Simple Player - {{ video_file.split('.')[0] }}{% endblock %}
+{% block body %}
+<div class="page-header">
+	<h1>Welcome to Simple Player</h1>
+</div>
+<div>
+	{{ video_file }}
+	<p align="center">
+		<div class="player">
+	   	 	<video poster="" controls crossorigin>
+	        	<!-- firefox支持不完善，android、chrome工作良好 支持webm、mp4、ogg格式-->
+	        	<source src="{{ url_for('static', filename='video/' + video_file.encode('utf-8') ) }}" type="video/{{ video_file.split('.')[-1] }}">
+	        		
+	        	<!-- Text track file 字幕文件
+	        	<track kind="captions" label="English captions" src="https://cdn.selz.com/plyr/1.0/movie_captions_en.vtt" srclang="en" default>
+				-->
+				<!-- Fallback for browsers that don't support the <video> element -->
+	        	<a href="{{ url_for('static', filename='video/' + video_file.encode('utf-8') ) }}">下载</a>
+	    	</video>
+		</div>
+	</p>
+</div>
+
+
+<script type="text/javascript">
+(function(d, p){
+    var a = new XMLHttpRequest(),
+        b = d.body;
+    a.open("GET", p, true);
+    a.send();
+    a.onload = function(){
+        var c = d.createElement("div");
+        c.style.display = "none";
+        c.innerHTML = a.responseText;
+        b.insertBefore(c, b.childNodes[0]);
+    }
+})(document, "{{ url_for('static', filename='sprite.svg') }}");
+
+</script>
+
+<script type="text/javascript">
+	/* 尝试失败。。。Flvplayer不支持unicode ,先将就用吧*/
+	videouri = encodeURI({{ url_for('static', filename='video/' + video_file.encode('utf-8') ) }});
+	document.getElementById("swfplayer").flashvars="vcastr_file=" + videouri;
+</script>
+
+<script src="{{ url_for('static', filename='js/plyr.js') }}"></script>
+
+<!-- Shr core script -->
+<script src="https://cdn.shr.one/0.1.9/shr.js"></script>
+
+<!-- Docs script -->
+<script src="{{ url_for('static', filename='js/docs.js') }}"></script>
+
+{% endblock %}
