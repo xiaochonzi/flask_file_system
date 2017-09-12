@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Simple Player - {{ video_file.split('.')[0] }}{% endblock %}
+{% block title %}
+    Simple Player - {{ video_file.split('.')[0] }}
+{% endblock %}
 {% block body %}
     <main role="main" id="main">
+        <h1>{{ video_file }}</h1>
         <section>
-            <video controls crossorigin>
-                <source scr="{{ url_for('video',path=path) }}" type="video/{{ video_file.split('.')[-1] }}">
+            <video controls crossorigin width="600px" height="500px">
+                <source src="/video?file={{ video_file }}" type="video/{{ video_file.split('.')[-1] }}">
+
             </video>
         </section>
     </main>

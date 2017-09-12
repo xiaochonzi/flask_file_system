@@ -1,5 +1,5 @@
 #-*- coding: UTF-8 -*-
-from flask import Flask, make_response, request, session, render_template, send_file, Response,redirect,jsonify
+from flask import Flask, make_response, request, render_template, send_file, Response,jsonify
 from flask.views import MethodView
 from datetime import datetime
 import humanize
@@ -8,13 +8,12 @@ import re
 import stat
 import json
 import mimetypes
-import sys
 import shutil
 
 
 app = Flask(__name__)
 
-root = os.path.expanduser('D:/filesystem')
+root = os.path.expanduser('~/filesystem')
 
 ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100',
            '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
@@ -191,26 +190,28 @@ def rename():
     return jsonify(ret)
 
 def gen(path):
-    size = os.path.getsize(path)
     with open(path,'rb') as f:
-        b = f.read()
+        f.seek(0)
+        b = f.read(1024)
         while b:
             yield b
+            b = f.read(1024)
+
 
 @app.route("/video")
 def video():
     file = request.args.get('file')
-    path = os.path.join(root,file)
-    response = Response(
-        gen(path),
-        206,  # Partial Content
-        mimetype=mimetypes.guess_type(path)[0],  # Content-Type must be correct
-        direct_passthrough=True,  # Identity encoding
-    )
-    response.headers.add(
-        'Accept-Ranges', 'bytes'  # Accept request with Range header
-    )
-    return response
+    path = os.path.join(root, file)
+    size = os.path.getsize(path)
+    start = 0
+    end = size - start + 1
+    resp = Response(gen(path))
+    resp.headers.add('accept-ranges', 'bytes')
+    resp.headers.add('content-length', size)
+    resp.headers.add('content-range', "bytes {0}-{1}/{2}".format(start, end, size))
+    resp.headers.add('content-type', 'video/mp4')
+    return resp
+
 
 @app.route('/test')
 def test():

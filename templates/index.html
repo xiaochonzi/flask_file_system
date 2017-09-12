@@ -94,10 +94,10 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
     <script>
         function del(){
-            var filelist = []
+            var filelist = [];;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             $("input[type='checkbox'][name='path']:checked").each(function(i){
                 filelist[i] = "{{ path }}"+$(this).val()
-            })
+            });;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             $.ajax({
                 url:"{{ url_for('delete') }}",
                 data:{
@@ -112,10 +112,10 @@
             })
         }
         function rename(){
-            var filelist = []
+            var filelist = [];;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             $("input[type='checkbox'][name='path']:checked").each(function(i){
                 filelist[i] = "{{ path }}"+$(this).val()
-            })
+            });;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             if(filelist.length>1 || filelist.length==0){
                 $.alert({
                     title: 'Alert!',
