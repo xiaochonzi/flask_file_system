@@ -9,6 +9,8 @@ import stat
 import json
 import mimetypes
 import shutil
+import sys
+sys.setdefaultencoding('utf-8')
 
 
 app = Flask(__name__)
