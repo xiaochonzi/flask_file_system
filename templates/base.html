@@ -3,6 +3,7 @@
 	<head>
 		{% block head %}
 		<title>{% block title %}{% endblock %}</title>
+         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/plyr.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/docs.css') }}">
         <link rel="stylesheet" href="{{url_for('static', filename='css/listr.pack.css')}}">
@@ -11,7 +12,6 @@
 	</head>
 	<body >
 		{% block body %}
-
 		{% endblock %}
 	</body>
 </html>

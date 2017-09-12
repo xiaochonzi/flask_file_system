@@ -1,5 +1,5 @@
 #-*- coding: UTF-8 -*-
-from flask import Flask, make_response, request, session, render_template, send_file, Response,redirect
+from flask import Flask, make_response, request, session, render_template, send_file, Response,redirect,jsonify
 from flask.views import MethodView
 from datetime import datetime
 import humanize
@@ -9,11 +9,12 @@ import stat
 import json
 import mimetypes
 import sys
+import shutil
 
 
 app = Flask(__name__)
 
-root = os.path.expanduser('~')
+root = os.path.expanduser('D:/filesystem')
 
 ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100',
            '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
@@ -83,13 +84,12 @@ def partial_response(path, start, end=None):
     with open(path, 'rb') as fd:
         fd.seek(start)
         bytes = fd.read(length)
-    assert len(bytes) == length
 
     response = Response(
         bytes,
-        206,
-        mimetype=mimetypes.guess_type(path)[0],
-        direct_passthrough=True,
+        206,  # Partial Content
+        mimetype=mimetypes.guess_type(path)[0],  # Content-Type must be correct
+        direct_passthrough=True,  # Identity encoding
     )
     response.headers.add(
         'Content-Range', 'bytes {0}-{1}/{2}'.format(
@@ -97,10 +97,9 @@ def partial_response(path, start, end=None):
         ),
     )
     response.headers.add(
-        'Accept-Ranges', 'bytes'
+        'Accept-Ranges', 'bytes'  # Accept request with Range header
     )
     return response
-
 
 def get_range(request):
     range = request.headers.get('Range')
@@ -114,7 +113,6 @@ def get_range(request):
         return start, end
     else:
         return 0, None
-
 
 class PathView(MethodView):
     def get(self, p=''):
@@ -133,7 +131,6 @@ class PathView(MethodView):
                 stat_res = os.stat(filepath)
                 info = {}
                 info['name'] = filename
-
                 info['mtime'] = stat_res.st_mtime
                 ft = get_type(stat_res.st_mode)
                 info['type'] = ft
@@ -153,12 +150,49 @@ class PathView(MethodView):
                     page = render_template('player.html', video_file=p)
                     res = make_response(page, 200)
                 else:
-                    return make_response('Not support',404)
+                    if 'Range' in request.headers:
+                        start, end = get_range(request)
+                        res = partial_response(path, start, end)
+                    else:
+                        res = send_file(path)
+                        res.headers.add('Content-Disposition', 'attachment')
             else:
                 return make_response('Not support', 404)
         else:
             res = make_response('Not found', 404)
         return res
+
+@app.route('/del')
+def delete():
+    filelist = request.args.get('filelist')
+    filelist = json.loads(filelist)
+    for file in filelist:
+        path = os.path.join(root,file)
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        elif os.path.isfile(path):
+            os.remove(path)
+    ret = {
+        "result":1
+    }
+    return jsonify(ret)
+
+@app.route("/rename")
+def rename():
+    old_name = request.args.get("old_name")
+    new_name = request.args.get("new_name")
+    old_path = os.path.join(root,old_name)
+    new_path = os.path.join(root,new_name)
+    print(old_path,new_path)
+    os.rename(old_path,new_path)
+    ret = {
+        "result": 1
+    }
+    return jsonify(ret)
+
+@app.route("/video")
+def video():
+    pass
 
 
 path_view = PathView.as_view('path_view')

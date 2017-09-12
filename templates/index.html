@@ -15,30 +15,31 @@
                     {% endfor %}
                 </ol>
             </div>
-            <div class="col-xs-12 col-sm-5 col-md-4 col-sm-offset-7 col-md-offset-8 pull-sm-right">
-                <div class="form-group">
-                    <label class="form-control-label sr-only" for="listr-search">Search</label>
-                    <input type="text" id="listr-search" class="form-control" placeholder="Search">
-                </div>
-            </div>
-            <div class="pull-sm-right">
-                <div class="btn-group">
-                    <a data-toggle="modal" data-target="#uploader-modal" class="btn btn-secondary text-muted">Upload</a>
-                    {% if hide_dotfile == 'yes' %}
-                        <a href="?hide-dotfile=no" class="btn btn-secondary text-muted">Show Dotfiles</a>
-                    {% else %}
-                        <a href="?hide-dotfile=yes" class="btn btn-secondary text-muted">Hide Dotfiles</a>
-                    {% endif %}
-                </div>
+        </div>
+        <div id="toolbar" class="form-group clearfix" style="padding: 0 10px;">
+            <div class="form-inline" role="" style="float: left">
+                <button type="button" class="btn btn-default " onclick="del()">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    <span>删除</span>
+                </button>
+                <button type="button" class="btn btn-default " onclick="rename()">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    <span>重命名</span>
+                </button>
+                <button type="button" class="btn btn-default " onclick="transform()">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    <span>转码</span>
+                </button>
             </div>
         </div>
         <div class="table-responsive">
             <table id="listr-table" class="table table-hover">
                 <thead>
                 <tr>
-                    <th class="text-xs-left " data-sort="string">Name</th>
-                    <th class="text-xs-right " data-sort="int">Size</th>
-                    <th class="text-xs-right " data-sort="int">Modified</th>
+                    <td CLASS="text-xs-center"><input type="checkbox" /> </td>
+                    <th class="text-xs-left " data-sort="string">文件名</th>
+                    <th class="text-xs-right " data-sort="int">大小</th>
+                    <th class="text-xs-right " data-sort="int">修改时间</th>
                 </tr>
                 </thead>
                 <tfoot>
@@ -53,9 +54,13 @@
                 <tbody>
                 {% for entry in contents if entry.type == 'dir' %}
                     <tr>
-                        <td class="text-xs-left " data-sort-value="dir-{{ entry.name | lower }}"><i
-                                class="fa fa-fw fa-folder " aria-hidden="true"></i>&nbsp;<a
-                                href="{{ entry.name }}/"><strong>{{ entry.name }}</strong></a></td>
+                        <td class="text-xs-center">
+                            <input type="checkbox" name="path" data="dir" value="{{ entry.name }}"/>
+                        </td>
+                        <td class="text-xs-left " data-sort-value="dir-{{ entry.name | lower }}">
+                            <i class="fa fa-fw fa-folder " aria-hidden="true"></i>&nbsp;
+                            <a href="{{ entry.name }}/"><strong>{{ entry.name }}</strong></a>
+                        </td>
                         <td class="text-xs-right " data-sort-value="-1">&mdash;</td>
                         <td class="text-xs-right " data-sort-value="{{ entry.mtime }}"
                             title="{{ entry.mtime | time_fmt }}">{{ entry.mtime | humanize }}</td>
@@ -63,6 +68,9 @@
                 {% endfor %}
                 {% for entry in contents if entry.type == 'file' %}
                     <tr>
+                        <td class="text-xs-center">
+                            <input type="checkbox" name="path" dir="file" value="{{ entry.name }}"/>
+                        </td>
                         <td class="text-xs-left " data-sort-value="file-{{ entry.name | lower }}"><i
                                 class="fa fa-fw {{ entry.name | icon_fmt }} " aria-hidden="true"></i>&nbsp;
                             <a href="{{ entry.name }}">{{ entry.name }}</a>
@@ -83,6 +91,88 @@
     <script type="text/javascript" src="{{ url_for('static', filename='js/listr.pack.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.filer.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/custom.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
+    <script>
+        function del(){
+            var filelist = []
+            $("input[type='checkbox'][name='path']:checked").each(function(i){
+                filelist[i] = "{{ path }}"+$(this).val()
+            })
+            $.ajax({
+                url:"{{ url_for('delete') }}",
+                data:{
+                    "filelist":JSON.stringify(filelist)
+                },
+                dataType:"JSON",
+                success:function(ret){
+                    if(ret.result==1){
+                        window.location.reload();
+                    }
+                }
+            })
+        }
+        function rename(){
+            var filelist = []
+            $("input[type='checkbox'][name='path']:checked").each(function(i){
+                filelist[i] = "{{ path }}"+$(this).val()
+            })
+            if(filelist.length>1 || filelist.length==0){
+                $.alert({
+                    title: 'Alert!',
+                    content: '选择一个文件!',
+                });
+                return ;
+            }
+            $.confirm({
+                title: 'Prompt!',
+                content: '' +
+                '<form action="" class="formName">' +
+                '<div class="form-group">' +
+                '<label>文件名</label>' +
+                '<input type="text" id="name"  placeholder="新文件名" class="name form-control" required />' +
+                '</div>' +
+                '</form>',
+                buttons: {
+                    formSubmit: {
+                        text: 'Submit',
+                        btnClass: 'btn-blue',
+                        action: function () {
+                            var name = this.$content.find('.name').val();
+                            if(!name){
+                                $.alert('请填写内容');
+                                return false;
+                            }
+                            $.ajax({
+                                url:"{{ url_for('rename') }}",
+                                data:{
+                                    "old_name":filelist[0],
+                                    "new_name":"{{ path }}"+name
+                                },
+                                dataType:"JSON",
+                                success:function(ret){
 
+                                }
+                            });
+                        }
+                    },
+                    cancel: function () {
+                        //close
+                    },
+                },
+                onContentReady: function () {
+                    // bind to events
+                    var jc = this;
+                    this.$content.find('form').on('submit', function (e) {
+                        // if the user submits the form by pressing enter in the field.
+                        e.preventDefault();
+                        jc.$$formSubmit.trigger('click'); // reference the button and click it
+                    });
+                }
+            });
+        }
+        function transform(){
+
+        }
+    </script>
 {% endblock %}
 
