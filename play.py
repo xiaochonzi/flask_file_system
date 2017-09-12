@@ -190,10 +190,31 @@ def rename():
     }
     return jsonify(ret)
 
+def gen(path):
+    size = os.path.getsize(path)
+    with open(path,'rb') as f:
+        b = f.read()
+        while b:
+            yield b
+
 @app.route("/video")
 def video():
-    pass
+    file = request.args.get('file')
+    path = os.path.join(root,file)
+    response = Response(
+        gen(path),
+        206,  # Partial Content
+        mimetype=mimetypes.guess_type(path)[0],  # Content-Type must be correct
+        direct_passthrough=True,  # Identity encoding
+    )
+    response.headers.add(
+        'Accept-Ranges', 'bytes'  # Accept request with Range header
+    )
+    return response
 
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
 path_view = PathView.as_view('path_view')
 app.add_url_rule('/', view_func=path_view)
