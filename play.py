@@ -9,13 +9,10 @@ import stat
 import json
 import mimetypes
 import shutil
-import sys
-sys.setdefaultencoding('utf-8')
-
 
 app = Flask(__name__)
 
-root = os.path.expanduser('~/filesystem')
+root = os.path.expanduser('d:/filesystem')
 
 ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100',
            '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
@@ -214,10 +211,6 @@ def video():
     resp.headers.add('content-type', 'video/mp4')
     return resp
 
-
-@app.route('/test')
-def test():
-    return render_template('test.html')
 
 path_view = PathView.as_view('path_view')
 app.add_url_rule('/', view_func=path_view)
