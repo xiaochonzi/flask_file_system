@@ -12,7 +12,7 @@ import shutil
 
 app = Flask(__name__)
 
-root = os.path.expanduser('d:/filesystem')
+root = os.path.expanduser('/data/download')
 
 ignored = ['.bzr', '$RECYCLE.BIN', '.DAV', '.DS_Store', '.git', '.hg', '.htaccess', '.htpasswd', '.Spotlight-V100',
            '.svn', '__MACOSX', 'ehthumbs.db', 'robots.txt', 'Thumbs.db', 'thumbs.tps']
