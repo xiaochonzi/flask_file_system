@@ -13,15 +13,15 @@
             </video>
         </section>
     </main>
-    <script src="https://cdn.plyr.io/2.0.13/plyr.js"></script>
+    <script src="{{ url_for('static',filename='js/plyr.js') }}"></script>
 
     <!-- Docs script -->
-    <script src="https://cdn.plyr.io/2.0.13/demo.js"></script>
+    <script src="{{ url_for('static', filename='js/demo.js') }}"></script>
 
     <!-- Rangetouch to fix <input type="range"> on touch devices (see https://rangetouch.com) -->
-    <script src="https://cdn.rangetouch.com/1.0.1/rangetouch.js" async></script>
+    <script src="{{ url_for('static', filename='js/rangetouch.js') }}" async></script>
 
     <!-- Sharing libary (https://shr.one) -->
-    <script src="https://cdn.shr.one/1.0.1/shr.js"></script>
+    <script src="{{ url_for('static', filename='js/shr.js') }}"></script>
     <script>if(window.shr) { window.shr.setup({ count: { classname: 'btn__count' } }); }</script>
 {% endblock %}

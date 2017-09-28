@@ -1,5 +1,5 @@
 #-*- coding: UTF-8 -*-
-from flask import Flask, make_response, request, render_template, send_file, Response,jsonify
+from flask import Flask, make_response, request, render_template, send_file, Response,jsonify,send_from_directory
 from flask.views import MethodView
 from datetime import datetime
 import humanize
@@ -200,16 +200,16 @@ def gen(path):
 @app.route("/video")
 def video():
     file = request.args.get('file')
-    path = os.path.join(root, file)
-    size = os.path.getsize(path)
-    start = 0
-    end = size - start + 1
-    resp = Response(gen(path))
-    resp.headers.add('accept-ranges', 'bytes')
-    resp.headers.add('content-length', size)
-    resp.headers.add('content-range', "bytes {0}-{1}/{2}".format(start, end, size))
-    resp.headers.add('content-type', 'video/mp4')
-    return resp
+    return send_from_directory(root,file,mimetype=mimetypes.guess_type(file)[0])
+    # size = os.path.getsize(path)
+    # start = 0
+    # end = size - start + 1
+    # resp = Response(gen(path))
+    # resp.headers.add('accept-ranges', 'bytes')
+    # resp.headers.add('content-length', size)
+    # resp.headers.add('content-range', "bytes {0}-{1}/{2}".format(start, end, size))
+    # resp.headers.add('content-type', 'video/mp4')
+
 
 
 path_view = PathView.as_view('path_view')
@@ -218,5 +218,5 @@ app.add_url_rule('/<path:p>', view_func=path_view)
 
 if __name__ == '__main__':
     #app.run(port=8000)
-    app.run(debug=True, host='0.0.0.0',port=8000)
+    app.run(host='127.0.0.1',port=8000)
 
